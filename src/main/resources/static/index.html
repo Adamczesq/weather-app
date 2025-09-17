@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather App</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+            font-family: sans-serif;
+            text-align: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 350px;
+            margin-top: 20px;
+            margin: 0 auto;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .tab-buttons {
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .tab-button {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            background-color: #f2f2f2;
+            margin-right: 5px;
+            font-size: 16px;
+        }
+        .tab-button.active {
+            background-color: #fff;
+            border-bottom: 2px solid #fff;
+            font-weight: bold;
+        }
+        .weather-card {
+            display: none;
+        }
+        .weather-card.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Sprawdź prognozę pogody w obecnej lokalizacji</h1>
+<button onclick="getWeather()">Sprawdź</button>
+<br>
+
+<div id="weather-container">
+    <div class="tab-buttons" id="tab-buttons-container">
+    </div>
+    <div class="tab-content" id="tab-content-container">
+    </div>
+</div>
+
+<p id="status-message"></p>
+
+<script>
+    async function positionSuccess(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        const statusMsg = document.getElementById('status-message');
+        const tabButtonsContainer = document.getElementById('tab-buttons-container');
+        const tabContentContainer = document.getElementById('tab-content-container');
+
+        statusMsg.innerHTML = `Coordinates obtained: ${lat}, ${lon}.<br>Fetching weather data...`;
+
+        tabButtonsContainer.innerHTML = '';
+        tabContentContainer.innerHTML = '';
+
+        try {
+            const response = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
+            if (!response.ok) throw new Error('Server error: ' + response.statusText);
+
+            const weatherData = await response.json();
+            statusMsg.innerHTML = '';
+
+            weatherData.forEach((card, index) => {
+                const button = document.createElement('button');
+                button.className = 'tab-button';
+                button.textContent = card.title;
+                button.dataset.target = `card-${index}`;
+                tabButtonsContainer.appendChild(button);
+
+                // 2. Stwórz zawartość karty (tabelę)
+                const cardContent = document.createElement('div');
+                cardContent.className = 'weather-card';
+                cardContent.id = `card-${index}`; // Unikalne ID karty
+
+                let tableHTML = '<table>';
+                card.dataPoints.forEach(point => {
+                    tableHTML += `<tr>
+                                <td><strong>${point.label}</strong></td>
+                                <td>${point.value}</td>
+                              </tr>`;
+                });
+                tableHTML += '</table>';
+                cardContent.innerHTML = tableHTML;
+                tabContentContainer.appendChild(cardContent);
+            });
+
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const weatherCards = document.querySelectorAll('.weather-card');
+
+            function switchTab(targetId) {
+                weatherCards.forEach(card => card.classList.remove('active'));
+                tabButtons.forEach(button => button.classList.remove('active'));
+
+                document.getElementById(targetId).classList.add('active');
+                document.querySelector(`[data-target='${targetId}']`).classList.add('active');
+            }
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    switchTab(button.dataset.target);
+                });
+            });
+
+            if (tabButtons.length > 0) {
+                switchTab(tabButtons[0].dataset.target);
+            }
+
+        } catch (error) {
+            statusMsg.innerHTML = "Failed to fetch weather data: " + error.message;
+        }
+    }
+
+    function getWeather() {
+        const resultDiv = document.getElementById('status-message');
+        resultDiv.innerHTML = "Getting location...";
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(positionSuccess, positionError);
+        } else {
+            resultDiv.innerHTML = "Your browser does not support geolocation.";
+        }
+    }
+
+    function positionError(error) {
+        const resultDiv = document.getElementById('status-message');
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                resultDiv.innerHTML = "User denied the request for Geolocation.";
+                break;
+            case error.POSITION_UNAVAILABLE:
+                resultDiv.innerHTML = "Location information is unavailable.";
+                break;
+            case error.TIMEOUT:
+                resultDiv.innerHTML = "The request to get user location timed out.";
+                break;
+            default:
+                resultDiv.innerHTML = "An unknown error occurred.";
+                break;
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -13,7 +13,6 @@
             font-family: sans-serif;
             text-align: center;
         }
-
         table {
             border-collapse: collapse;
             width: 350px;
@@ -98,10 +97,9 @@
                 button.dataset.target = `card-${index}`;
                 tabButtonsContainer.appendChild(button);
 
-                // 2. Stwórz zawartość karty (tabelę)
                 const cardContent = document.createElement('div');
                 cardContent.className = 'weather-card';
-                cardContent.id = `card-${index}`; // Unikalne ID karty
+                cardContent.id = `card-${index}`;
 
                 let tableHTML = '<table>';
                 card.dataPoints.forEach(point => {

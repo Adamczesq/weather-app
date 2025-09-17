@@ -1,5 +1,6 @@
 package com.zaxis.weather_app.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxis.weather_app.model.WeatherResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

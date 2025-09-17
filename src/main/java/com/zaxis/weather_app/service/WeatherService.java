@@ -10,11 +10,15 @@ public class WeatherService {
 
     @Value("${openweathermap.api.key}")
     private String apiKey;
+    private final RestTemplate restTemplate;
 
-    private static final String API_URL = "https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={apiKey}&units=metric";
+    private static final String API_URL = "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&appid={apiKey}";
+
+    public WeatherService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public WeatherResponse getWeather(double lat, double lon) {
-        RestTemplate restTemplate = new RestTemplate();
         return restTemplate.getForObject(API_URL, WeatherResponse.class, lat, lon, apiKey);
     }
 }

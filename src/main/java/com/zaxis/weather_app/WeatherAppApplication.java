@@ -14,10 +14,4 @@ public class WeatherAppApplication {
 		SpringApplication.run(WeatherAppApplication.class, args);
 	}
 
-	@Bean
-	public ObjectMapper objectMapper() {
-		return new Jackson2ObjectMapperBuilder()
-				.propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-				.build();
-	}
 }
